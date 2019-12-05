@@ -1,0 +1,213 @@
+Package farmgui;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ *
+ * @author HP
+ */
+public class FarmGui {
+
+    ArrayList<Cattle> cattlelist = new ArrayList<Cattle>();
+    String header[] = new String[]{"Cattle Id", "Weight (Kg)", "Breed type", "Date registered"};
+    DefaultTableModel dtm = new DefaultTableModel(header, 1);
+
+    FarmGui() {
+
+        JFrame frame = new JFrame("Cattle Information System");
+        frame.setSize(400, 450);
+
+        JLabel jlabel = new JLabel("Cattle Id");
+        jlabel.setBounds(10, 10, 60, 20);
+        frame.add(jlabel);
+
+        JLabel jlabela = new JLabel("Weight(Kg)");
+        jlabela.setBounds(10, 30, 100, 20);
+        frame.add(jlabela);
+
+        JLabel jlabelb = new JLabel("Breed Type");
+        jlabelb.setBounds(10, 50, 100, 20);
+        frame.add(jlabelb);
+
+        JLabel jlabelc = new JLabel("Date Registered");
+        jlabelc.setBounds(10, 70, 100, 20);
+        frame.add(jlabelc);
+
+        JTextField jtfcattleId = new JTextField();
+        jtfcattleId.setBounds(150, 10, 100, 20);
+        frame.add(jtfcattleId);
+
+        JTextField jtfweight = new JTextField();
+        jtfweight.setBounds(150, 30, 100, 20);
+        frame.add(jtfweight);
+
+        JTextField jtfbreedType = new JTextField();
+        jtfbreedType.setBounds(150, 50, 150, 20);
+        frame.add(jtfbreedType);
+
+        JTextField jtfdateRegistered = new JTextField();
+        jtfdateRegistered.setBounds(150, 70, 100, 20);
+        frame.add(jtfdateRegistered);
+
+        JButton jbuttoninsert = new JButton("INSERT");
+        jbuttoninsert.setBounds(120, 100, 150, 20);
+        frame.add(jbuttoninsert);
+
+        JTable jtable = new JTable();
+        jtable.setBounds(20, 140, 250, 350);
+        frame.add(jtable);
+        jtable.setModel(dtm);
+        JScrollPane scrollPane = new JScrollPane(jtable);
+        scrollPane.setBounds(20, 140, 350, 250);
+        frame.add(scrollPane);
+        jtable.getColumnModel().getColumn(0).setPreferredWidth(180);
+        jtable.getColumnModel().getColumn(1).setPreferredWidth(230);
+        jtable.getColumnModel().getColumn(2).setPreferredWidth(300);
+        jtable.getColumnModel().getColumn(3).setPreferredWidth(350);
+
+        jbuttoninsert.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                String cattleId = jtfcattleId.getText().toUpperCase();
+                String weight = jtfweight.getText();
+                String breedType = jtfbreedType.getText();
+                String dateRegistered = jtfdateRegistered.getText();
+                if (cattleId.length() < 3) {
+                    JOptionPane.showMessageDialog(frame, "Id should contain more than 3 number!!!");
+                    return;
+                }
+                if (!isInteger(weight)) {
+                    JOptionPane.showMessageDialog(frame, "Weight should only contain number!!!");
+                    return;
+                }
+
+                Cattle cattle = new Cattle(cattleId, weight, breedType, dateRegistered);
+                cattlelist.add(cattle);
+                writeData();
+            }
+        });
+
+        
+        
+
+        frame.setResizable(false);
+        frame.setLocationRelativeTo(null);
+        frame.setLayout(null);
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+        FarmGui farmgui = new FarmGui();
+
+    }
+
+    
+    private void writeData() { //write data to file "data.txt"
+        try (FileWriter f = new FileWriter("data.txt")) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < cattlelist.size(); i++) {
+                sb.append(cattlelist.get(i).getCattleId() + "," + cattlelist.get(i).getWeight() + "," + cattlelist.get(i).getBreedType() + "," + cattlelist.get(i).getDateRegistered() + "-");
+            }
+            f.write(sb.toString());
+            f.close();
+        } catch (IOException e) {
+            return;
+        }
+        dtm.setRowCount(0); //update table content
+        for (int i = 0; i < cattlelist.size(); i++) {//populate table using object list
+            Object[] objs = {cattlelist.get(i).getCattleId(), cattlelist.get(i).getWeight(), cattlelist.get(i).getBreedType(),cattlelist.get(i).getDateRegistered()};
+            dtm.addRow(objs);
+        }
+    }
+
+    public boolean isInteger(String str) {
+        if (str == null) {
+            return false;
+        }
+        int length = str.length();
+        if (length == 0) {
+            return false;
+        }
+        int i = 0;
+        if (str.charAt(0) == '-') {
+            if (length == 1) {
+                return false;
+            }
+            i = 1;
+        }
+        for (; i < length; i++) {
+            char c = str.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+*//class
+
+
+package farmgui;
+
+/**
+ *
+ * @author HP
+ */
+public class Cattle {
+
+    private String cattleId;
+    String weight;
+    private String breedType;
+    String dateRegistered;
+
+    Cattle(String cattleId, String weight, String breedType, String dateRegistered) {
+        this.cattleId = cattleId;
+        this.weight = weight;
+        this.breedType = breedType;
+        this.dateRegistered = dateRegistered;
+    }
+
+    String getCattleId() {
+        return cattleId;
+    }
+
+    String getWeight() {
+        return weight;
+    }
+
+    String getBreedType() {
+        return breedType;
+    }
+
+    String getDateRegistered() {
+        return dateRegistered;
+    }
+
+    void setWeight(String weight) {
+        this.weight = weight;
+    }
+
+}
+
+
+
